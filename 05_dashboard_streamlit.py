@@ -9,7 +9,7 @@ Autor y tesista: Bryan Sulca Lopez
 
 EJECUTAR:   streamlit run 05_dashboard_streamlit.py
 REQUIERE:   haber corrido 02 y 03 en esta carpeta, y tener junto a este
-            archivo: dataset_sipiera_500_REAL.xlsx
+            archivo: dataset_sipiera_500_real_y_sintetico.xlsx
 ------------------------------------------------------------
 """
 import os
@@ -22,11 +22,11 @@ import streamlit as st
 from sklearn.metrics import classification_report, confusion_matrix
 
 AUTOR = "Bryan Sulca Lopez"
-EXCEL = "dataset_sipiera_500_REAL.xlsx"
-CLASES = ["Riesgo", "Moderado", "Alto"]           # 0, 1, 2
-COLOR = {"Riesgo": "#FF6B6B", "Moderado": "#FFC857", "Alto": "#3DDC97"}
+EXCEL = "dataset_sipiera_500_real_y_sintetico.xlsx"
+CLASES = ["En riesgo", "Regular", "Buen rendimiento"]           # 0, 1, 2
+COLOR = {"En riesgo": "#FF6B6B", "Regular": "#FFC857", "Buen rendimiento": "#3DDC97"}
 AZUL, TEXTO, APAGADO, SUPERFICIE = "#5B8DEF", "#E6EDF7", "#8FA0BA", "#131C2E"
-MAPA_TARGET = {0: "Riesgo", 1: "Moderado", 2: "Alto"}
+MAPA_TARGET = {0: "En riesgo", 1: "Regular", 2: "Buen rendimiento"}
 MODELOS = {"Random Forest": "pred_rf", "XGBoost": "pred_xgb", "Red Neuronal (Keras)": "pred_rna"}
 
 st.set_page_config(page_title="SIPIERA-FISI", page_icon="🎓", layout="wide")
@@ -77,45 +77,42 @@ def estilo(fig, alto=380):
 RENOMBRAR = {
     "1. Ciclo académico actual": "Ciclo",
     "2. Ingreso familiar mensual aproximado": "Ingreso familiar",
-    "3. Facilidad de acceso a computadora e internet estable": "Acceso tecnológico (1-5)",
+    "3. Facilidad de acceso a computadora e internet estable": "Acceso tecnológico",
     "4. Nivel educativo más alto de tus padres o tutores": "Educación de los padres",
     "5. Colegio de procedencia": "Colegio",
     "6. Distrito de residencia actual": "Distrito",
     "7. ¿Trabajas actualmente mientras estudias?": "Trabaja",
     "7a. ¿Cuántas horas semanales trabajas aproximadamente?": "Horas de trabajo",
     "8. Promedio ponderado acumulado aproximado": "Promedio ponderado",
-    "9. ¿De qué ciclo(s) anteriores tienes cursos pendientes?": "Ciclos con pendientes",
+    "9. ¿De qué ciclo(s) anteriores tienes cursos pendientes? (relativo al ciclo actual)": "Ciclos con pendientes",
     "10. ¿Cuántos cursos pendientes tienes en total?": "Cursos pendientes",
-    "11. Rendimiento percibido en cursos críticos de primeros ciclos": "Rendimiento en cursos críticos (1-5)",
+    "11. Rendimiento percibido en cursos críticos de primeros ciclos": "Rendimiento en cursos críticos",
     "12. Porcentaje aproximado de cursos aprobados en total": "% de cursos aprobados",
     "13. Puntaje o percentil en el examen de admisión": "Percentil de admisión",
     "14. ¿Cómo describirías tu situación académica actual?": "Situación académica",
+    "origen_dato": "Origen",
 }
 ORDEN = {
-    "Ciclo": ["9°", "10°"],
-    "Ingreso familiar": ["Menos de S/1000", "S/1000 - S/2000", "S/2000 - S/3000", "S/3000 - S/4000", "Más de S/4000"],
-    "Educación de los padres": ["Primaria", "Secundaria", "Técnica", "Universitaria", "Posgrado"],
-    "Horas de trabajo": ["No trabaja", "Menos de 10 horas", "10-20 horas", "20-30 horas", "30 horas a más"],
-    "Promedio ponderado": ["Menor a 11", "11-12", "12-13", "13-14", "14-15", "Mayor a 15"],
-    "Cursos pendientes": ["0", "1", "2", "3", "4 o más"],
-    "% de cursos aprobados": ["Menos de 50%", "50% - 70%", "70% - 85%", "85% - 95%", "Más de 95%"],
-    "Percentil de admisión": ["Percentil bajo", "Percentil medio", "Percentil alto", "No recuerdo"],
-    "Situación académica": ["Riesgo", "Moderado", "Alto"],
+    "Ciclo": ["IX ciclo", "X ciclo"],
+    "Ingreso familiar": ["Menos de S/ 1,000", "S/ 1,000 – S/ 2,000", "S/ 2,001 – S/ 3,500", "S/ 3,501 – S/ 5,000", "Más de S/ 5,000"],
+    "Acceso tecnológico": ["Muy difícil", "Difícil", "Regular", "Fácil", "Muy fácil"],
+    "Educación de los padres": ["Primaria", "Secundaria", "Técnico", "Universitario", "Posgrado"],
+    "Horas de trabajo": ["No trabaja", "Menos de 10 h", "10 – 20 h", "21 – 30 h", "31 – 40 h", "Más de 40 h"],
+    "Promedio ponderado": ["Menos de 11", "11 – 12.9", "13 – 14.9", "15 – 16.9", "17 – 20"],
+    "Cursos pendientes": ["0", "1", "2", "3", "4"],
+    "Rendimiento en cursos críticos": ["Muy bajo", "Bajo", "Regular", "Bueno", "Muy bueno"],
+    "% de cursos aprobados": ["Menos de 60%", "60% – 74%", "75% – 89%", "90% – 100%"],
+    "Percentil de admisión": ["Menos de 50", "50 – 69", "70 – 84", "85 – 100"],
+    "Situación académica": CLASES,
 }
-SIT_ETIQUETA = {
-    "Avance regular, sin atrasos": "Alto",
-    "Avance con algún retraso (1 ciclo)": "Moderado",
-    "Riesgo de atraso significativo o posible abandono (2 o más ciclos)": "Riesgo",
-}
+SIT_ETIQUETA = {"Regular / estable": "Regular", "En riesgo académico": "En riesgo", "Buen rendimiento": "Buen rendimiento"}
 
 
 @st.cache_data
 def cargar_excel():
     d = pd.read_excel(EXCEL, sheet_name="Respuestas_Formulario").rename(columns=RENOMBRAR)
     d["Horas de trabajo"] = d["Horas de trabajo"].fillna("No trabaja")
-    d["Trabaja"] = d["Trabaja"].replace({"Si": "Sí"})
-    d["Ciclos con pendientes"] = d["Ciclos con pendientes"].fillna("Ninguno")
-    d["Cursos pendientes"] = d["Cursos pendientes"].astype(str)
+    d["Cursos pendientes"] = d["Cursos pendientes"].astype(int).astype(str)
     d["Situación académica"] = d["Situación académica"].map(SIT_ETIQUETA)
     return d
 
@@ -137,7 +134,7 @@ except FileNotFoundError as e:
     st.stop()
 
 shap_df = cargar_csv("shap_importancia.csv", index_col=0) if os.path.exists("shap_importancia.csv") else None
-origen = raw["origen_dato"].iloc[0] if "origen_dato" in raw else "REAL"
+n_real, n_sint = int((raw["Origen"] == "REAL").sum()), int((raw["Origen"] == "SINTETICO").sum())
 
 # ---------------------------------------------------------------
 # CABECERA
@@ -149,7 +146,7 @@ st.markdown(f"""
   basado en Variables Socioeconómicas y Académicas de Estudiantes de la FISI.</p>
   <span class="chip autor">Autor y tesista: {AUTOR}</span>
   <span class="chip">Facultad de Ingeniería de Sistemas e Informática, UNMSM</span>
-  <span class="chip">{len(raw)} estudiantes encuestados</span>
+  <span class="chip">{n_real} reales + {n_sint} sintéticos (SMOTE)</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -158,6 +155,7 @@ st.markdown(f"""
 # ---------------------------------------------------------------
 st.sidebar.markdown("### Filtros")
 st.sidebar.caption("Aplican a la pestaña Panorama y a la descarga de datos.")
+f_ori = st.sidebar.radio("Datos", ["Todos", "Solo reales", "Solo sintéticos"])
 f_ciclo = st.sidebar.multiselect("Ciclo", ORDEN["Ciclo"], default=ORDEN["Ciclo"])
 f_sit = st.sidebar.multiselect("Situación académica", CLASES, default=CLASES)
 f_dist = st.sidebar.multiselect("Distrito", sorted(raw["Distrito"].unique()), placeholder="Todos los distritos")
@@ -169,6 +167,8 @@ df = raw[
     raw["Ciclo"].isin(f_ciclo) & raw["Situación académica"].isin(f_sit) &
     raw["Colegio"].isin(f_cole) & raw["Trabaja"].isin(f_trab)
 ]
+if f_ori != "Todos":
+    df = df[df["Origen"] == ("REAL" if f_ori == "Solo reales" else "SINTETICO")]
 if f_ing:
     df = df[df["Ingreso familiar"].isin(f_ing)]
 if f_dist:
@@ -185,9 +185,9 @@ with tab1:
     if df.empty:
         st.warning("Los filtros no dejan ningún estudiante. Amplía la selección en la barra lateral.")
     else:
-        pct_riesgo = (df["Situación académica"] == "Riesgo").mean() * 100
+        pct_riesgo = (df["Situación académica"] == "En riesgo").mean() * 100
         pct_trab = (df["Trabaja"] == "Sí").mean() * 100
-        pct_pub = (df["Colegio"] == "Publico").mean() * 100
+        pct_pub = (df["Colegio"] == "Colegio público").mean() * 100
         ppa_moda = df["Promedio ponderado"].mode().iloc[0]
         k = st.columns(4)
         for col, v, l in zip(k, [f"{len(df)}", f"{pct_riesgo:.0f}%", f"{pct_trab:.0f}%", ppa_moda],
@@ -206,7 +206,7 @@ with tab1:
             st.plotly_chart(estilo(fig, 380), use_container_width=True)
         with c2:
             dd = (df.groupby("Distrito")["Situación académica"]
-                  .apply(lambda s: (s == "Riesgo").mean() * 100).reset_index(name="% en riesgo"))
+                  .apply(lambda s: (s == "En riesgo").mean() * 100).reset_index(name="% en riesgo"))
             dd["n"] = df.groupby("Distrito").size().values
             dd = dd.sort_values("% en riesgo").tail(12)
             fig = px.bar(dd, x="% en riesgo", y="Distrito", orientation="h", hover_data=["n"],
@@ -217,8 +217,8 @@ with tab1:
 
         st.markdown("#### Compara variables contra la situación académica")
         variables = [v for v in ORDEN if v != "Situación académica"] + ["Distrito", "Colegio", "Trabaja",
-                                                                         "Acceso tecnológico (1-5)",
-                                                                         "Rendimiento en cursos críticos (1-5)"]
+                                                                         "Acceso tecnológico",
+                                                                         "Rendimiento en cursos críticos"]
         o1, o2 = st.columns([3, 1])
         elegidas = o1.multiselect("Variables a graficar (elige varias)", variables,
                                   default=["Promedio ponderado", "% de cursos aprobados"])
@@ -238,10 +238,10 @@ with tab1:
             cols[i % 2].plotly_chart(estilo(fig, 340), use_container_width=True)
 
         st.markdown("#### Relación entre variables (todos los registros codificados)")
-        num = limpio[[c for c in limpio.columns if not c.startswith("distrito_")]]
+        num = limpio[[c for c in limpio.columns if not c.startswith(("distrito_", "colegio_")) and c != "origen_dato"]]
         corr = num.corr().round(2)
         fig = px.imshow(corr, color_continuous_scale=["#FF6B6B", "#131C2E", "#3DDC97"], zmin=-1, zmax=1,
-                        aspect="auto", title="Correlación (target: 0 = Riesgo, 1 = Moderado, 2 = Alto)")
+                        aspect="auto", title="Correlación (target: 0 = En riesgo, 1 = Regular, 2 = Buen rendimiento)")
         st.plotly_chart(estilo(fig, 600), use_container_width=True)
 
 # ===============================================================
@@ -255,7 +255,7 @@ with tab2:
         r = resultados[resultados["Modelo"].isin(sel)].sort_values("F1-score", ascending=False)
         mejor = r.iloc[0]
         st.success(f"Mejor modelo según F1-score: **{mejor['Modelo']}** ({mejor['F1-score']:.3f}), "
-                   f"con recall de {mejor['Recall_clase_Riesgo']:.2f} en la clase Riesgo.")
+                   f"± {mejor['F1-score_std']:.2f}, con recall de {mejor['Recall_clase_Riesgo']:.2f} en la clase En riesgo.")
         c1, c2 = st.columns([1.1, 1])
         with c1:
             m = r.melt(id_vars="Modelo", value_vars=["Accuracy", "Precision", "Recall", "F1-score", "AUC-ROC"],
@@ -264,10 +264,10 @@ with tab2:
                          color_discrete_sequence=[AZUL, "#B28DFF", "#3DDC97"], range_y=[0, 1])
             st.plotly_chart(estilo(fig, 400), use_container_width=True)
         with c2:
-            st.dataframe(r.set_index("Modelo").style.format("{:.3f}").highlight_max(axis=0, color="#1f4fa3"),
+            st.dataframe(r.set_index("Modelo")[["Accuracy", "Precision", "Recall", "F1-score", "AUC-ROC", "Recall_clase_Riesgo"]].style.format("{:.3f}").highlight_max(axis=0, color="#1f4fa3"),
                          use_container_width=True)
-            st.caption("Evaluado sobre 100 estudiantes de prueba (20 % del total). Con pocos casos, las "
-                       "métricas varían entre ejecuciones; interprétalas como orientativas.")
+            st.caption("Validación cruzada 5×2 sobre los 69 estudiantes REALES (SMOTE solo dentro del entrenamiento de cada pliegue). "
+                       "Con tan pocos casos las métricas son orientativas; revisa también su desviación estándar (columnas _std).")
 
         st.markdown("#### Matriz de confusión")
         cm_cols = st.columns(len(sel))
@@ -303,12 +303,12 @@ with tab2:
 with tab3:
     fuentes = {"Random Forest": fi["RandomForest"], "XGBoost": fi["XGBoost"]}
     if shap_df is not None:
-        fuentes["SHAP (mejor modelo)"] = shap_df.iloc[:, 0]
+        fuentes["SHAP (Random Forest final)"] = shap_df.iloc[:, 0]
     c1, c2, c3 = st.columns([2, 1, 1])
     elegidos = c1.multiselect("Fuente de importancia", list(fuentes), default=list(fuentes)[:2])
     topn = c2.slider("Cuántas variables mostrar", 5, 25, 12)
     agrupar = c3.toggle("Agrupar distritos", value=False,
-                        help="Suma las 20 columnas de distrito en una sola barra. Sale alta porque junta muchas columnas, no porque un distrito pese tanto.")
+                        help="Suma las columnas de distrito en una sola barra. Sale alta porque junta muchas columnas, no porque un distrito pese tanto.")
     if elegidos:
         tabla = pd.concat({k: fuentes[k] for k in elegidos}, axis=1)
         tabla = tabla / tabla.sum() * 100       # % del total, comparable entre fuentes
@@ -325,7 +325,7 @@ with tab3:
         st.plotly_chart(estilo(fig, 120 + 38 * len(tabla) * max(1, len(elegidos) * 0.6)), use_container_width=True)
         st.caption("Cada fuente se expresa como % del total de su propia importancia, para poder compararlas. "
                    "Las variables académicas (promedio, % aprobado, cursos pendientes) dominan porque están muy "
-                   "ligadas a la situación que se predice.")
+                   "ligadas a la situación que se predice (riesgo de fuga parcial de información).")
     else:
         st.info("Elige al menos una fuente.")
 
@@ -333,7 +333,7 @@ with tab3:
 # TAB 4: SIMULADOR
 # ===============================================================
 with tab4:
-    st.markdown("Ingresa el perfil de un estudiante y el modelo Random Forest estima su nivel de riesgo.")
+    st.markdown("Ingresa el perfil de un estudiante y el modelo Random Forest estima su situación académica (entrenado con los 69 reales + SMOTE).")
     if not os.path.exists("modelo_random_forest.joblib"):
         st.warning("Falta modelo_random_forest.joblib. Corre de nuevo 03_entrenamiento_modelos.py.")
     else:
@@ -345,9 +345,9 @@ with tab4:
             ciclo = st.selectbox("Ciclo", ORDEN["Ciclo"])
             ingreso = st.selectbox("Ingreso familiar", ORDEN["Ingreso familiar"], index=2)
             edu = st.selectbox("Educación de los padres", ORDEN["Educación de los padres"], index=1)
-            colegio = st.radio("Colegio", ["Publico", "Privado"], horizontal=True)
+            colegio = st.radio("Colegio", ["Colegio público", "Colegio parroquial", "Colegio privado"], horizontal=True)
             distrito = st.selectbox("Distrito", sorted(raw["Distrito"].unique()))
-            acceso = st.slider("Acceso a computadora e internet", 1, 5, 3)
+            acceso = st.select_slider("Acceso a computadora e internet", ORDEN["Acceso tecnológico"], value="Regular")
         with b:
             st.markdown("**Trabajo y admisión**")
             trabaja = st.radio("¿Trabaja?", ["No", "Sí"], horizontal=True)
@@ -360,27 +360,26 @@ with tab4:
                                   ["Del ciclo inmediato anterior", "De 2 ciclos atrás", "De 3 ciclos a más"],
                                   placeholder="Ninguno")
             npend = st.selectbox("Total de cursos pendientes", ORDEN["Cursos pendientes"])
-            rend = st.slider("Rendimiento en cursos críticos", 1, 5, 3)
+            rend = st.select_slider("Rendimiento en cursos críticos", ORDEN["Rendimiento en cursos críticos"], value="Regular")
             pct = st.selectbox("% de cursos aprobados", ORDEN["% de cursos aprobados"], index=2)
 
         fila = pd.Series(0, index=columnas, dtype=float)
         fila["ciclo_enc"] = ORDEN["Ciclo"].index(ciclo)
         fila["ingreso_enc"] = ORDEN["Ingreso familiar"].index(ingreso)
-        fila["acceso_tec"] = acceso
+        fila["acceso_tec"] = ORDEN["Acceso tecnológico"].index(acceso) + 1
         fila["nivel_edu_padres_enc"] = ORDEN["Educación de los padres"].index(edu)
-        fila["colegio_privado"] = int(colegio == "Privado")
+        fila["colegio_" + colegio.replace("Colegio ", "").capitalize()] = 1
         fila["trabaja_enc"] = int(trabaja == "Sí")
-        fila["horas_trabajo_enc"] = 0 if trabaja == "No" else ORDEN["Horas de trabajo"].index(horas)
+        fila["horas_trabajo_enc"] = 0 if trabaja == "No" else ORDEN["Horas de trabajo"].index(horas)   # 0 = no trabaja, 1..5
         fila["ppa_enc"] = ORDEN["Promedio ponderado"].index(ppa)
         fila["pend_ciclo_anterior"] = int("Del ciclo inmediato anterior" in pend)
         fila["pend_2_ciclos"] = int("De 2 ciclos atrás" in pend)
         fila["pend_3_o_mas_ciclos"] = int("De 3 ciclos a más" in pend)
         fila["ciclos_atraso_enc"] = 3 if fila["pend_3_o_mas_ciclos"] else 2 if fila["pend_2_ciclos"] else int(fila["pend_ciclo_anterior"])
         fila["num_cursos_pendientes_enc"] = ORDEN["Cursos pendientes"].index(npend)
-        fila["rendimiento_cursos_criticos"] = rend
+        fila["rendimiento_cursos_criticos"] = ORDEN["Rendimiento en cursos críticos"].index(rend) + 1
         fila["pct_cursos_aprobados_enc"] = ORDEN["% de cursos aprobados"].index(pct)
-        fila["puntaje_admision_enc"] = 1 if adm == "No recuerdo" else ORDEN["Percentil de admisión"].index(adm)
-        fila["no_recuerda_admision"] = int(adm == "No recuerdo")
+        fila["puntaje_admision_enc"] = ORDEN["Percentil de admisión"].index(adm)
         if f"distrito_{distrito}" in fila.index:
             fila[f"distrito_{distrito}"] = 1
 
