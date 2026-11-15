@@ -1,0 +1,28 @@
+variable,importancia_media,IC95_inf,IC95_sup,IC_excluye_0
+ingreso_enc,0.0437,0.0145,0.0703,True
+trabaja_enc,0.0275,0.0118,0.0439,True
+puntaje_admision_enc,0.0226,-0.007,0.0515,False
+horas_trabajo_enc,0.0203,0.0048,0.0372,True
+acceso_tec,0.0167,-0.0047,0.0371,False
+distrito_Villa María del Triunfo,0.0071,0.0,0.0149,True
+colegio_privado,0.005,-0.0076,0.0186,False
+distrito_Lima Cercado,0.0042,-0.0068,0.0146,False
+nivel_edu_padres_enc,0.0024,-0.0177,0.022,False
+distrito_Santiago de Surco,0.0008,-0.0007,0.0029,False
+distrito_Pueblo Libre,0.0007,-0.0012,0.003,False
+distrito_Puente Piedra,0.0003,-0.0003,0.0016,False
+distrito_San Juan de Miraflores,0.0003,-0.002,0.0028,False
+colegio_público,-0.0,-0.0219,0.0207,False
+distrito_Callao,-0.0001,-0.0055,0.0059,False
+distrito_Villa El Salvador,-0.0006,-0.0068,0.0059,False
+distrito_Independencia,-0.0008,-0.0023,0.0,False
+distrito_Breña,-0.0013,-0.0028,0.0,False
+colegio_parroquial,-0.0016,-0.0095,0.0063,False
+distrito_Ate,-0.0026,-0.007,0.0012,False
+distrito_Carabayllo,-0.0029,-0.0106,0.0025,False
+distrito_Comas,-0.0038,-0.0121,0.0044,False
+distrito_Los Olivos,-0.0043,-0.0136,0.0036,False
+ciclo_enc,-0.0045,-0.0208,0.0123,False
+distrito_San Juan de Lurigancho,-0.0085,-0.0178,-0.0003,True
+distrito_Rímac,-0.009,-0.0186,-0.0013,True
+distrito_San Martín de Porres,-0.0131,-0.0229,-0.0042,True

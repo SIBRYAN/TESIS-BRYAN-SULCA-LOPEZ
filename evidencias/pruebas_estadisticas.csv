@@ -1,0 +1,10 @@
+comparacion,dif_media,IC95_inf,IC95_sup,t,p_unilateral,d_z,p_Holm,decision(alpha=0.05),familia
+RF_M1_SMOTE - Mayoritaria,0.1602,0.0237,0.2968,2.3577,0.0112,1.2251,0.0673,No se rechaza H0,confirmatoria (Holm)
+RF_M1_SMOTE - Aleatoria,0.0439,-0.1656,0.2534,0.4208,0.3379,0.2187,0.6757,No se rechaza H0,confirmatoria (Holm)
+RF_M1_SMOTE - LogReg_M1,0.086,-0.0682,0.2402,1.1208,0.1339,0.5824,0.5357,No se rechaza H0,confirmatoria (Holm)
+XGB_M1_SMOTE - Mayoritaria,0.1517,0.0144,0.2889,2.2211,0.0155,1.1541,0.0775,No se rechaza H0,confirmatoria (Holm)
+XGB_M1_SMOTE - Aleatoria,0.0353,-0.1579,0.2285,0.3673,0.3575,0.1909,0.6757,No se rechaza H0,confirmatoria (Holm)
+XGB_M1_SMOTE - LogReg_M1,0.0774,-0.1043,0.2591,0.8561,0.198,0.4449,0.5941,No se rechaza H0,confirmatoria (Holm)
+RF_M1_SMOTE - RF_M1_CW,0.0558,-0.0626,0.1742,0.9468,0.1742,0.492,,,descriptiva (sin decisión)
+RF_M2_SMOTE - RF_M1_SMOTE,0.276,0.124,0.4281,3.648,0.0003,1.8956,,,descriptiva (sin decisión)
+LogReg_M2 - LogReg_M1,0.2572,0.1163,0.3981,3.6681,0.0003,1.906,,,descriptiva (sin decisión)
